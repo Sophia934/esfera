@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Esfera Interativa</title>
+    <title>Esfera Interativa com Sombra Projetada</title>
     <style>
         body {
             margin: 0;
@@ -19,11 +19,58 @@
         .container {
             text-align: center;
             padding: 20px;
+            position: relative;
+        }
+
+        .sphere-wrapper {
+            position: relative;
+            display: inline-block;
+            perspective: 1000px;
+        }
+
+        /* Sombra projetada no chão */
+        .shadow {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 280px;
+            height: 60px;
+            background: radial-gradient(ellipse at center, 
+                rgba(0,0,0,0.6) 0%,
+                rgba(0,0,0,0.4) 40%,
+                rgba(0,0,0,0.2) 70%,
+                transparent 100%);
+            border-radius: 50%;
+            filter: blur(8px);
+            animation: shadowFloat 3s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Sombra secundária para maior profundidade */
+        .shadow-secondary {
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 240px;
+            height: 40px;
+            background: radial-gradient(ellipse at center, 
+                rgba(0,0,0,0.4) 0%,
+                rgba(0,0,0,0.2) 50%,
+                transparent 100%);
+            border-radius: 50%;
+            filter: blur(12px);
+            animation: shadowFloat 3s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.7;
         }
 
         .sphere-container {
-            perspective: 1000px;
-            margin: 50px auto;
+            position: relative;
+            z-index: 2;
         }
 
         .sphere {
@@ -41,7 +88,8 @@
                 rgba(200,200,200,0.8) 50%,
                 rgba(100,100,100,0.7) 100%);
             
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3),
+            /* Sombra da própria esfera */
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3),
                         inset 0 -20px 30px rgba(0,0,0,0.2),
                         inset 0 20px 30px rgba(255,255,255,0.3);
         }
@@ -72,7 +120,7 @@
             pointer-events: none;
         }
 
-        /* Animação de flutuação */
+        /* Animação de flutuação da esfera */
         @keyframes float {
             0%, 100% {
                 transform: translateY(0px);
@@ -82,24 +130,65 @@
             }
         }
 
+        /* Animação da sombra acompanhando a flutuação */
+        @keyframes shadowFloat {
+            0%, 100% {
+                transform: translateX(-50%) scale(1);
+                opacity: 0.7;
+            }
+            50% {
+                transform: translateX(-50%) scale(0.95);
+                opacity: 0.5;
+            }
+        }
+
         /* Efeito hover na esfera */
         .sphere:hover {
-            transform: scale(1.05) translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+            transform: scale(1.05) translateY(-8px);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.4),
+                        inset 0 -20px 30px rgba(0,0,0,0.2),
+                        inset 0 20px 30px rgba(255,255,255,0.4);
             transition: all 0.3s ease;
+        }
+
+        /* Efeito hover na sombra */
+        .sphere-wrapper:hover .shadow {
+            animation: shadowHover 0.3s ease forwards;
+        }
+
+        .sphere-wrapper:hover .shadow-secondary {
+            animation: shadowHoverSecondary 0.3s ease forwards;
+        }
+
+        @keyframes shadowHover {
+            to {
+                transform: translateX(-50%) scale(0.9);
+                opacity: 0.8;
+                filter: blur(10px);
+            }
+        }
+
+        @keyframes shadowHoverSecondary {
+            to {
+                transform: translateX(-50%) scale(0.85);
+                opacity: 0.6;
+                filter: blur(14px);
+            }
         }
 
         /* Texto de instrução */
         .instruction {
             color: white;
             font-size: 1.2rem;
-            margin-top: 30px;
+            margin-top: 80px;
             text-align: center;
             background: rgba(0,0,0,0.3);
             padding: 10px 20px;
             border-radius: 25px;
             backdrop-filter: blur(10px);
             animation: pulse 2s ease-in-out infinite;
+            position: relative;
+            z-index: 3;
         }
 
         @keyframes pulse {
@@ -111,6 +200,20 @@
             }
         }
 
+        /* Adicionando um fundo com textura para destacar a sombra */
+        .ground-effect {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 100px;
+            background: radial-gradient(ellipse at center, 
+                rgba(0,0,0,0.1) 0%,
+                transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
         /* Responsividade */
         @media (max-width: 600px) {
             .sphere {
@@ -118,25 +221,65 @@
                 height: 200px;
             }
             
+            .shadow {
+                width: 180px;
+                height: 40px;
+                bottom: -20px;
+            }
+            
+            .shadow-secondary {
+                width: 150px;
+                height: 30px;
+                bottom: -15px;
+            }
+            
             .instruction {
                 font-size: 1rem;
-                margin-top: 20px;
+                margin-top: 60px;
             }
+        }
+
+        /* Efeito de luz ambiente */
+        .ambient-light {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, 
+                rgba(255,255,255,0.1) 0%,
+                transparent 70%);
+            pointer-events: none;
+            z-index: 0;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="sphere-container">
-            <div class="sphere" id="colorSphere"></div>
+        <div class="sphere-wrapper">
+            <!-- Sombras projetadas para dar profundidade -->
+            <div class="shadow"></div>
+            <div class="shadow-secondary"></div>
+            
+            <div class="sphere-container">
+                <div class="sphere" id="colorSphere"></div>
+            </div>
         </div>
+        
         <div class="instruction">
             🎨 Passe o mouse sobre a esfera para mudar sua cor aleatoriamente!
+            <br>
+            <small style="opacity: 0.8;">✨ Observe a sombra se ajustando com o movimento</small>
         </div>
+        
+        <div class="ground-effect"></div>
+        <div class="ambient-light"></div>
     </div>
 
     <script>
         const sphere = document.getElementById('colorSphere');
+        const shadow = document.querySelector('.shadow');
+        const shadowSecondary = document.querySelector('.shadow-secondary');
         
         // Função para gerar cores aleatórias
         function getRandomColor() {
@@ -167,6 +310,19 @@
                     ${lightColor} 0%,
                     ${baseColor} 50%,
                     ${darkColor} 100%)`;
+                
+                // Ajusta a cor da sombra baseada na cor da esfera para maior realismo
+                const shadowColor = `rgba(${Math.floor(r * 0.3)}, ${Math.floor(g * 0.3)}, ${Math.floor(b * 0.3)}, 0.6)`;
+                shadow.style.background = `radial-gradient(ellipse at center, 
+                    ${shadowColor} 0%,
+                    rgba(0,0,0,0.4) 40%,
+                    rgba(0,0,0,0.2) 70%,
+                    transparent 100%)`;
+                    
+                shadowSecondary.style.background = `radial-gradient(ellipse at center, 
+                    rgba(0,0,0,0.4) 0%,
+                    rgba(0,0,0,0.2) 50%,
+                    transparent 100%)`;
             } else {
                 // Fallback caso não consiga analisar a cor
                 sphere.style.background = `radial-gradient(circle at 30% 30%, 
@@ -184,16 +340,23 @@
             // Adiciona um pequeno efeito visual de transição
             sphere.style.transition = 'background 0.3s ease, transform 0.3s ease';
             
+            // Efeito de pulso na sombra ao mudar a cor
+            shadow.style.transition = 'all 0.3s ease';
+            shadowSecondary.style.transition = 'all 0.3s ease';
+            shadow.style.transform = 'translateX(-50%) scale(1.1)';
+            shadowSecondary.style.transform = 'translateX(-50%) scale(1.05)';
+            
+            setTimeout(() => {
+                shadow.style.transform = 'translateX(-50%)';
+                shadowSecondary.style.transform = 'translateX(-50%)';
+            }, 200);
+            
             // Opcional: mostra a cor atual no console (para debug)
             console.log('Nova cor da esfera:', newColor);
         }
         
         // Adiciona o evento de mouseenter (quando o mouse entra na esfera)
         sphere.addEventListener('mouseenter', changeRandomColor);
-        
-        // Efeito adicional: muda a cor quando o mouse sai também (opcional)
-        // Descomente a linha abaixo se quiser que mude também ao sair
-        // sphere.addEventListener('mouseleave', changeRandomColor);
         
         // Inicializa com uma cor aleatória
         changeRandomColor();
@@ -206,10 +369,32 @@
         // Efeito de brilho ao passar o mouse (mantendo o gradiente)
         sphere.addEventListener('mouseenter', function() {
             this.style.filter = 'brightness(1.05)';
+            // Aumenta o contraste da sombra
+            shadow.style.filter = 'blur(10px)';
+            shadowSecondary.style.filter = 'blur(14px)';
         });
         
         sphere.addEventListener('mouseleave', function() {
             this.style.filter = 'brightness(1)';
+            shadow.style.filter = 'blur(8px)';
+            shadowSecondary.style.filter = 'blur(12px)';
+        });
+        
+        // Adiciona efeito de parallax na sombra baseado no movimento do mouse (opcional)
+        document.addEventListener('mousemove', (e) => {
+            const rect = sphere.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            const mouseX = e.clientX;
+            const mouseY = e.clientY;
+            
+            const deltaX = (mouseX - centerX) / 50;
+            const deltaY = (mouseY - centerY) / 50;
+            
+            // Pequeno deslocamento da sombra baseado na posição do mouse
+            shadow.style.transform = `translateX(calc(-50% + ${deltaX}px)) translateY(${deltaY}px)`;
+            shadowSecondary.style.transform = `translateX(calc(-50% + ${deltaX * 0.7}px)) translateY(${deltaY * 0.7}px)`;
         });
     </script>
 </body>
