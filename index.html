@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Esfera Interativa</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Arial', sans-serif;
+        }
+
+        .container {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .sphere-container {
+            perspective: 1000px;
+            margin: 50px auto;
+        }
+
+        .sphere {
+            width: 300px;
+            height: 300px;
+            position: relative;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: float 3s ease-in-out infinite;
+            
+            /* Gradiente radial para dar efeito 3D */
+            background: radial-gradient(circle at 30% 30%, 
+                rgba(255,255,255,0.9) 0%,
+                rgba(200,200,200,0.8) 50%,
+                rgba(100,100,100,0.7) 100%);
+            
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3),
+                        inset 0 -20px 30px rgba(0,0,0,0.2),
+                        inset 0 20px 30px rgba(255,255,255,0.3);
+        }
+
+        /* Efeito de brilho na esfera */
+        .sphere::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 40px;
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 100%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        /* Efeito de reflexão */
+        .sphere::after {
+            content: '';
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: radial-gradient(circle, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0) 100%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        /* Animação de flutuação */
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        /* Efeito hover na esfera */
+        .sphere:hover {
+            transform: scale(1.05) translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+            transition: all 0.3s ease;
+        }
+
+        /* Texto de instrução */
+        .instruction {
+            color: white;
+            font-size: 1.2rem;
+            margin-top: 30px;
+            text-align: center;
+            background: rgba(0,0,0,0.3);
+            padding: 10px 20px;
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 0.7;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+
+        /* Responsividade */
+        @media (max-width: 600px) {
+            .sphere {
+                width: 200px;
+                height: 200px;
+            }
+            
+            .instruction {
+                font-size: 1rem;
+                margin-top: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sphere-container">
+            <div class="sphere" id="colorSphere"></div>
+        </div>
+        <div class="instruction">
+            🎨 Passe o mouse sobre a esfera para mudar sua cor aleatoriamente!
+        </div>
+    </div>
+
+    <script>
+        const sphere = document.getElementById('colorSphere');
+        
+        // Função para gerar cores aleatórias
+        function getRandomColor() {
+            // Gera valores RGB aleatórios entre 0 e 255
+            const r = Math.floor(Math.random() * 256);
+            const g = Math.floor(Math.random() * 256);
+            const b = Math.floor(Math.random() * 256);
+            
+            // Retorna a cor no formato RGB
+            return `rgb(${r}, ${g}, ${b})`;
+        }
+        
+        // Função para gerar gradiente radial com a cor base
+        function updateSphereColor(baseColor) {
+            // Analisa a cor RGB para criar um gradiente harmonioso
+            const rgbMatch = baseColor.match(/\d+/g);
+            if (rgbMatch) {
+                const r = parseInt(rgbMatch[0]);
+                const g = parseInt(rgbMatch[1]);
+                const b = parseInt(rgbMatch[2]);
+                
+                // Cria variações de brilho para o gradiente
+                const lightColor = `rgb(${Math.min(r + 80, 255)}, ${Math.min(g + 80, 255)}, ${Math.min(b + 80, 255)})`;
+                const darkColor = `rgb(${Math.max(r - 60, 0)}, ${Math.max(g - 60, 0)}, ${Math.max(b - 60, 0)})`;
+                
+                // Aplica o gradiente radial para manter o efeito 3D
+                sphere.style.background = `radial-gradient(circle at 30% 30%, 
+                    ${lightColor} 0%,
+                    ${baseColor} 50%,
+                    ${darkColor} 100%)`;
+            } else {
+                // Fallback caso não consiga analisar a cor
+                sphere.style.background = `radial-gradient(circle at 30% 30%, 
+                    white 0%,
+                    ${baseColor} 50%,
+                    dark${baseColor} 100%)`;
+            }
+        }
+        
+        // Função para gerar e aplicar uma nova cor aleatória
+        function changeRandomColor() {
+            const newColor = getRandomColor();
+            updateSphereColor(newColor);
+            
+            // Adiciona um pequeno efeito visual de transição
+            sphere.style.transition = 'background 0.3s ease, transform 0.3s ease';
+            
+            // Opcional: mostra a cor atual no console (para debug)
+            console.log('Nova cor da esfera:', newColor);
+        }
+        
+        // Adiciona o evento de mouseenter (quando o mouse entra na esfera)
+        sphere.addEventListener('mouseenter', changeRandomColor);
+        
+        // Efeito adicional: muda a cor quando o mouse sai também (opcional)
+        // Descomente a linha abaixo se quiser que mude também ao sair
+        // sphere.addEventListener('mouseleave', changeRandomColor);
+        
+        // Inicializa com uma cor aleatória
+        changeRandomColor();
+        
+        // Adiciona efeito de clique para mostrar informação (opcional)
+        sphere.addEventListener('click', () => {
+            console.log('Esfera clicada! Cor atual:', sphere.style.background);
+        });
+        
+        // Efeito de brilho ao passar o mouse (mantendo o gradiente)
+        sphere.addEventListener('mouseenter', function() {
+            this.style.filter = 'brightness(1.05)';
+        });
+        
+        sphere.addEventListener('mouseleave', function() {
+            this.style.filter = 'brightness(1)';
+        });
+    </script>
+</body>
+</html>
